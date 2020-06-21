@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Todo from "./Todo";
-import { connect } from "react-redux";
 import { StoreType } from "../redux";
 import {
   cancelTodoAction,
@@ -8,15 +7,9 @@ import {
   saveTodoAction,
   TodoType,
 } from "../redux/ReduxTodos";
+import { ExtractConnect, useConnect } from "../redux/bothConnect";
 
-type Props = {
-  mainTodos: TodoType[];
-  cancelledTodos: TodoType[];
-  mainTitle: string;
-  markAsDone: (id: string) => void;
-  cancelTodo: (id: string) => void;
-  saveTodo: (title: string) => void;
-};
+type Props = { mainTitle: string } & ExtractConnect<typeof connectedTodos>;
 
 type State = {
   tempTodoTitle: string;
@@ -73,7 +66,7 @@ class Todos extends React.Component<Props, State> {
   }
 }
 
-export default connect(
+const connectedTodos = useConnect(
   ({ todos: { todos } }: StoreType) => ({
     mainTodos: todos.filter((todo) => todo.state !== "cancelled"),
     cancelledTodos: todos.filter((todo) => todo.state === "cancelled"),
@@ -83,4 +76,6 @@ export default connect(
     cancelTodo: cancelTodoAction,
     saveTodo: saveTodoAction,
   }
-)(Todos);
+);
+
+export default connectedTodos(Todos);

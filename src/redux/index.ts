@@ -25,4 +25,4 @@ const rootReducer = combineReducers<StoreType>({
   checkboxes: checkboxReducer,
 });
 
-export const store = createStore(rootReducer, applyMiddleware(thunk));
+export const store = createStore(rootReducer);
