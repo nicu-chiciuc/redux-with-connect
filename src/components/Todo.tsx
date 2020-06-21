@@ -1,12 +1,24 @@
 import React from "react";
-import { store } from "../redux";
+import { TodoState } from "../redux/ReduxTodos";
 
 type Props = {
   todoName: string;
+  markDone: () => void;
+  todoState: TodoState;
 };
 
 function Todo(props: Props) {
-  return <div>{props.todoName}</div>;
+  return (
+    <div style={{ display: "flex" }}>
+      <span> {props.todoName}</span>
+
+      {props.todoState === "todo" ? (
+        <button onClick={props.markDone}>mark as done</button>
+      ) : (
+        <span>()</span>
+      )}
+    </div>
+  );
 }
 
 export default Todo;
