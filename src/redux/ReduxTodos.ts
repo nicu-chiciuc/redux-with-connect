@@ -1,4 +1,6 @@
 import { randomId, unreachable } from "../utils";
+import { bothConnect, ExtractConnect } from "./bothConnect";
+import { StoreType } from "./index";
 
 export type TodosStore = {
   todos: TodoType[];
@@ -134,3 +136,22 @@ export function cancelTodoAction(id: string): TodoMessages {
     id,
   };
 }
+
+// Inline action creators
+export type WithConnectedTodos = ExtractConnect<typeof withConnectedTodos>;
+
+/**
+ * Create both the HOC and the hook at the same time
+ */
+export const [withConnectedTodos, useConnectedTodos] = bothConnect(
+  ({ todos: { todos } }) => ({
+
+    mainTodos: todos.filter((todo) => todo.state !== "cancelled"),
+    cancelledTodos: todos.filter((todo) => todo.state === "cancelled"),
+  }),
+  {
+    markAsDone: markAsDoneAction,
+    cancelTodo: cancelTodoAction,
+    saveTodo: saveTodoAction,
+  }
+);

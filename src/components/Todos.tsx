@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import Todo from "./Todo";
-import { StoreType } from "../redux";
 import {
-  cancelTodoAction,
-  markAsDoneAction,
-  saveTodoAction,
-  TodoType,
+  useConnectedTodos,
+  withConnectedTodos,
+  WithConnectedTodos,
 } from "../redux/ReduxTodos";
-import { ExtractConnect, useConnect } from "../redux/bothConnect";
 
-type Props = { mainTitle: string } & ExtractConnect<typeof connectedTodos>;
+/**
+ * Props that will be received from the outside
+ */
+type OuterProps = { mainTitle: string };
+
+/**
+ * All the props that the component will have access to
+ */
+type Props = OuterProps & WithConnectedTodos;
 
 type State = {
   tempTodoTitle: string;
@@ -45,16 +50,6 @@ class Todos extends React.Component<Props, State> {
             markDone={() => props.markAsDone(todo.id)}
           />
         ))}
-
-        <h2>Cancelled todos</h2>
-        {props.cancelledTodos.map((todo) => (
-          <Todo
-            todoName={todo.title}
-            todoState={todo.state}
-            markDone={() => props.markAsDone(todo.id)}
-          />
-        ))}
-
         <input
           type="text"
           value={this.state.tempTodoTitle}
@@ -66,16 +61,40 @@ class Todos extends React.Component<Props, State> {
   }
 }
 
-const connectedTodos = useConnect(
-  ({ todos: { todos } }: StoreType) => ({
-    mainTodos: todos.filter((todo) => todo.state !== "cancelled"),
-    cancelledTodos: todos.filter((todo) => todo.state === "cancelled"),
-  }),
-  {
-    markAsDone: markAsDoneAction,
-    cancelTodo: cancelTodoAction,
-    saveTodo: saveTodoAction,
-  }
-);
+export default withConnectedTodos(Todos);
 
-export default connectedTodos(Todos);
+// If we use a functional component
+
+/**
+ * It is very easy to switch the implementation from a class component that uses HOCs to a
+ * functional component that uses hooks
+ */
+function TodosFn(props: OuterProps) {
+  const [tempTodoTitle, setTodoTitle] = useState("");
+  const todoProps = useConnectedTodos();
+
+  const saveTempTodo = () => {
+    todoProps.saveTodo(tempTodoTitle);
+
+    setTodoTitle("");
+  };
+
+  const onTempInputChange = (value: React.ChangeEvent<HTMLInputElement>) => {
+    setTodoTitle(value.target.value);
+  };
+
+  return (
+    <div>
+      <h1>{props.mainTitle}</h1>
+      {todoProps.mainTodos.map((todo) => (
+        <Todo
+          todoName={todo.title}
+          todoState={todo.state}
+          markDone={() => todoProps.markAsDone(todo.id)}
+        />
+      ))}
+      <input type="text" value={tempTodoTitle} onChange={onTempInputChange} />
+      <button onClick={saveTempTodo}>Save todo</button>
+    </div>
+  );
+}
